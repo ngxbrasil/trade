@@ -1,0 +1,16 @@
+{
+  "name": "trade-broker-api",
+  "version": "1.0.0",
+  "description": "API feita para requisições de usuários do Broker.",
+  "main": "index.js",
+  "author": "Cássio Martim",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@quadcode-tech/client-sdk-js": "^1.3.3",
+    "axios": "^1.8.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0"
+  }
+}
