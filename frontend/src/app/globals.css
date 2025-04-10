@@ -9,7 +9,7 @@
   --primary-light: #1e293b;
   --accent-blue: #3b82f6;
   --accent-purple: #8b5cf6;
-  --accent-teal: #14b8a6;
+  --accent-blue: #14b8a6;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --success: #10b981;
@@ -54,8 +54,8 @@ body {
     background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
   }
   
-  .bg-gradient-purple-teal {
-    background: linear-gradient(135deg, var(--accent-purple), var(--accent-teal));
+  .bg-gradient-purple-blue {
+    background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
   }
   
   .glassmorphism {
