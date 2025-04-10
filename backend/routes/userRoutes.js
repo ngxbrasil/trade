@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
         }
 
         const currency = realBalances[0]?.currency || 'BRL'
-        
+
         const profile = sdk.userProfile
 
         const data = {
@@ -52,13 +52,13 @@ router.post('/', async (req, res) => {
             }
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             status: 'OK',
             code: 200,
             data: data
         })
     } catch (error) {
-        res.status(404).json({
+        return res.status(404).json({
             status: 'ERROR',
             code: 401,
             message: 'Autenticação inválida.',
