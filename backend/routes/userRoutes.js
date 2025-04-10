@@ -36,9 +36,12 @@ router.post('/', async (req, res) => {
 
         const currency = realBalances[0]?.currency || 'BRL'
         
+        const profile = sdk.userProfile
+
         const data = {
-            id: sdk.userProfile.userId,
-            name: sdk.userProfile.name,
+            id: profile.userId,
+            name: profile.firstName,
+            lastName: profile.lastName,
             email: email,
             platformId: process.env.PLATFORM_ID,
             apiUrl: process.env.API_URL,
@@ -54,8 +57,6 @@ router.post('/', async (req, res) => {
             code: 200,
             data: data
         })
-
-        // Atualizar o saldo do usuário
     } catch (error) {
         res.status(404).json({
             status: 'ERROR',
