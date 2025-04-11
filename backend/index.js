@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 
 // Configuração do CORS
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'http://localhost:3001',  'https://iatradersignalx.online'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));

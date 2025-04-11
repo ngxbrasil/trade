@@ -55,112 +55,6 @@ interface Signal {
   direction?: "COMPRA" | "VENDA" | "CALL" | "PUT";
 }
 
-// Componente AssetCard
-interface AssetCardProps {
-  label: string
-  value: string
-  isSelected: boolean
-  onClick: () => void
-  type: "crypto" | "forex"
-  icon?: string
-}
-
-function AssetCard({ label, value, isSelected, onClick, type, icon }: AssetCardProps) {
-  const getTypeColor = () => {
-    switch (type) {
-      case "crypto":
-        return {
-          bg: isSelected ? "from-blue-700/20 to-blue-700/20" : "",
-          border: isSelected ? "border-blue-600" : "border-slate-700 group-hover:border-slate-600",
-          text: isSelected ? "text-blue-300" : "text-slate-500",
-          glow: "bg-blue-600/20",
-        }
-      case "forex":
-        return {
-          bg: isSelected ? "from-blue-800/20 to-blue-700/20" : "",
-          border: isSelected ? "border-blue-600" : "border-slate-700 group-hover:border-slate-600",
-          text: isSelected ? "text-blue-300" : "text-slate-500",
-          glow: "bg-blue-600/20",
-        }
-      default:
-        return {
-          bg: isSelected ? "from-blue-700/20 to-blue-700/20" : "",
-          border: isSelected ? "border-blue-600" : "border-slate-700 group-hover:border-slate-600",
-          text: isSelected ? "text-blue-300" : "text-slate-500",
-          glow: "bg-blue-600/20",
-        }
-    }
-  }
-
-  const colors = getTypeColor()
-
-  return (
-    <motion.button
-      onClick={onClick}
-      className={`group relative overflow-hidden py-4 px-3 rounded-xl transition-all duration-300 ${
-        isSelected ? `bg-gradient-to-br ${colors.bg}` : "bg-slate-800/50 hover:bg-slate-800/80"
-      }`}
-      whileHover={{ y: -4 }}
-      whileTap={{ scale: 0.98 }}
-      aria-pressed={isSelected}
-    >
-      {/* Borda */}
-      <span
-        className={`absolute inset-0 rounded-xl ${
-          isSelected
-            ? `border-2 ${colors.border} shadow-md shadow-blue-500/30`
-            : "border border-slate-700 group-hover:border-slate-600"
-        }`}
-      ></span>
-
-      {/* Indicador de seleção */}
-      {isSelected && (
-        <motion.span
-          className="absolute top-2 right-2 h-2 w-2 rounded-full bg-blue-500"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 500, damping: 15 }}
-        />
-      )}
-
-      {/* Ícone do tipo de ativo */}
-      <div className={`mb-2 text-xs font-medium uppercase tracking-wider ${colors.text}`}>
-        {type === "crypto" ? "Crypto" : "Forex"}
-      </div>
-
-      {/* Conteúdo */}
-      <div className="relative flex items-center justify-center flex-col">
-        {icon && (
-          <div className="mb-2">
-            <div className="w-8 h-8 rounded-full bg-slate-700/50 flex items-center justify-center">
-        <Image
-                src={icon || "/placeholder.svg?height=24&width=24"}
-                alt={label}
-                width={24}
-                height={24}
-                className="rounded-full"
-              />
-            </div>
-          </div>
-        )}
-        <p className={`text-sm font-semibold ${isSelected ? "text-white" : "text-slate-300 group-hover:text-white"}`}>
-          {label}
-        </p>
-      </div>
-
-      {/* Efeito de destaque quando selecionado */}
-      {isSelected && (
-        <motion.div
-          className={`absolute -inset-1 blur-md ${colors.glow} z-0`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        />
-      )}
-    </motion.button>
-  )
-}
-
 // Componente GlowButton
 interface GlowButtonProps {
   onClick: () => void
@@ -696,20 +590,16 @@ export default function Home() {
 
   // Referência à Polarium Broker
   const polariumLoginUrl = "https://trade.polariumbroker.com/pt/login"
-  const polariumRegisterUrl = "https://trade.polariumbroker.com/pt/register"
 
   // Estados para geração de sinais
   const [selectedAsset, setSelectedAsset] = useState<string>("")
   const [selectedCategory, setSelectedCategory] = useState<"CRYPTO" | "FOREX" | "">("")
-  const [activeCategory, setActiveCategory] = useState<"CRYPTO" | "FOREX">("FOREX")
   const [isGeneratingSignal, setIsGeneratingSignal] = useState(false)
   const [generatedSignal, setGeneratedSignal] = useState<Signal | null>(null)
   // Adicionar estado para controlar se o sinal foi confirmado
   const [signalConfirmed, setSignalConfirmed] = useState(false)
-  const [confirmationType, setConfirmationType] = useState<string | null>(null)
 
-  const handleConfirmSignal = (type: string) => {
-    setConfirmationType(type)
+  const handleConfirmSignal = () => {
     setSignalConfirmed(true)
   }
 
@@ -774,8 +664,9 @@ export default function Home() {
       setIsAuthenticated(true);
       setUserData(userData);
       setShowLoginModal(false);
-    } catch (err: any) {
-      setError(err.message || "Falha ao fazer login. Tente novamente.")
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || "Falha ao fazer login. Tente novamente.")
     } finally {
       setLoading(false)
     }
@@ -814,7 +705,6 @@ export default function Home() {
     const seed = now.getHours() * 60 + now.getMinutes()
     const isCall = seed % 2 === 0
     const action = isCall ? "M1/CALL" : "M1/PUT"
-    const direction = isCall ? "M1/CALL" : "M1/PUT"
     
     // Resetar status de confirmação do sinal
     setSignalConfirmed(false)
@@ -837,6 +727,7 @@ export default function Home() {
       entry: entryPoint,
       stop: stopLoss,
       target: takeProfit,
+      direction: isCall ? "CALL" : "PUT"
     })
 
     setIsGeneratingSignal(false)
@@ -1244,7 +1135,7 @@ export default function Home() {
                         
                         <div className="mt-3 sm:mt-4">
                           <GlowButton
-                            onClick={() => handleConfirmSignal("executed")}
+                            onClick={() => handleConfirmSignal()}
                             className="w-full bg-opacity-90"
                             size="md"
                             variant="success"
