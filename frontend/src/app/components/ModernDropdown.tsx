@@ -6,7 +6,7 @@ interface DropdownOption {
   label: string;
   category?: string;
   icon?: string;
-  [key: string]: any;
+  [key: string]: string | boolean | number | undefined | null | Record<string, unknown>;
 }
 
 interface DropdownProps {
