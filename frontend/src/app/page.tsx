@@ -40,6 +40,7 @@ interface UserData {
   platformId?: string
   apiUrl?: string
   websocketApiEndpoint?: string
+  canGenerateSignals?: boolean
 }
 
 interface Signal {
@@ -221,7 +222,7 @@ function GlowButton({
         type={type}
         className={`${getSize()} py-2 bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg text-white font-semibold transition-all border border-slate-700 shadow-md ${getShadowColor()} flex items-center justify-center gap-2 ${
           disabled ? "opacity-70 cursor-not-allowed" : "hover:shadow-lg hover:shadow-blue-500/30"
-        } ${className}`}
+        } ${className} touch-manipulation`}
       >
         {icon && <span className="flex-shrink-0">{icon}</span>}
         {children}
@@ -657,13 +658,15 @@ function UserBalance({ userData, onLogout }: UserBalanceProps) {
           <div className="w-6 h-6 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-blue-500/20 to-blue-500/20 flex items-center justify-center border border-blue-500/30">
             <span className="text-xs sm:font-semibold text-white">{userData.name.charAt(0)}</span>
           </div>
-          <div className="absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 bg-blue-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
+          <div className={`absolute -bottom-1 -right-1 w-2 h-2 sm:w-3 sm:h-3 rounded-full border-2 border-slate-800 animate-pulse ${
+            userData.canGenerateSignals ? 'bg-green-500' : 'bg-amber-500'
+          }`}></div>
         </div>
         <div className="flex flex-col">
-          <span className="text-xs sm:text-sm font-medium text-white">{fullName}</span>
-          <span className="text-xs text-slate-400">
-            {formattedBalance}
-          </span>
+          <span className="text-xs sm:text-sm font-medium text-white max-w-[80px] sm:max-w-none truncate">{fullName}</span>
+          <div className="flex items-center">
+            <span className="text-xs text-slate-400">{formattedBalance}</span>
+          </div>
         </div>
       </div>
 
@@ -671,9 +674,12 @@ function UserBalance({ userData, onLogout }: UserBalanceProps) {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={onLogout}
-        className="z-10 bg-gradient-to-r from-red-600 to-red-700 px-2 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium shadow-md transition-all hover:shadow-xl hover:from-red-600 hover:to-red-800"
+        className="z-10 bg-gradient-to-r from-red-600 to-red-700 px-2 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium shadow-md transition-all hover:shadow-xl hover:from-red-600 hover:to-red-800 min-w-[40px] touch-manipulation"
       >
-        Sair
+        <span className="hidden sm:inline">Sair</span>
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:hidden" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v7h-1V3H4v18h12v-7h1v7a1 1 0 01-1 1H4a1 1 0 01-1-1V3zm15.707 8.707l-3 3a1 1 0 01-1.414-1.414L16.586 11H9a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 011.414-1.414l3 3a1 1 0 010 1.414z" clipRule="evenodd" />
+        </svg>
       </motion.button>
     </div>
   )
@@ -792,6 +798,13 @@ export default function Home() {
       return
     }
 
+    // Verificar se o usuário pode gerar sinais com base no saldo
+    if (userData && !userData.canGenerateSignals) {
+      setError(`Saldo insuficiente. É necessário ter pelo menos 60 ${userData.balance.currency} para gerar sinais.`)
+      setShowLoginModal(true)
+      return
+    }
+
     setIsGeneratingSignal(true)
   }
 
@@ -866,11 +879,11 @@ export default function Home() {
           <div className="flex items-center gap-2">
             <div>
               <Image 
-                src="/polarium-logo.svg"
-                alt="Polarium Broker Logo"
+                src="/logo.png"
+                alt="Trader Signals Logo"
                 width={140}
                 height={35}
-                className="h-6 sm:h-8 w-auto"
+                className="h-20 sm:h-24 w-auto"
               />
               <p className="text-xs text-slate-400 mt-1 hidden sm:block">Plataforma avançada de trading</p>
             </div>
@@ -896,30 +909,33 @@ export default function Home() {
             </div>
           </div>
 
-          {isAuthenticated && userData ? (
-            <UserBalance userData={userData} onLogout={handleLogout} />
-          ) : (
-            <GlowButton
-              onClick={() => setShowLoginModal(true)}
-              size="sm"
-              icon={
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-1.5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              }
-            >
-              Entrar
-            </GlowButton>
-          )}
+          <div className="flex items-center min-w-[80px]">
+            {isAuthenticated && userData ? (
+              <UserBalance userData={userData} onLogout={handleLogout} />
+            ) : (
+              <GlowButton
+                onClick={() => setShowLoginModal(true)}
+                size="sm"
+                className="z-50 py-2 px-4 shadow-lg shadow-blue-500/20 h-10"
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1.5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                }
+              >
+                <span className="text-sm font-medium">Entrar</span>
+              </GlowButton>
+            )}
+          </div>
         </div>
       </header>
 
@@ -1007,7 +1023,7 @@ export default function Home() {
                 <div className="flex justify-center">
                   <GlowButton
                     onClick={!isAuthenticated ? () => setShowLoginModal(true) : handleGenerateSignal}
-                    disabled={isAuthenticated && !selectedAsset}
+                    disabled={isAuthenticated && (!selectedAsset || userData?.canGenerateSignals === false)}
                     className="mt-4 sm:mt-8 w-full sm:w-auto"
                     size="lg"
                     icon={
@@ -1026,7 +1042,12 @@ export default function Home() {
                     }
                   >
                     <span className="whitespace-nowrap text-sm sm:text-base">
-                      {isAuthenticated ? "Gerar Análise de Mercado" : "Entrar para Analisar"}
+                      {!isAuthenticated 
+                        ? "Entrar para Analisar" 
+                        : userData?.canGenerateSignals === false
+                          ? "Saldo mínimo necessário" 
+                          : "Gerar Análise de Mercado"
+                      }
                     </span>
                   </GlowButton>
                 </div>
@@ -1037,6 +1058,25 @@ export default function Home() {
                       <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                     </svg>
                     <span>Faça login para acessar análises para Polarium Broker</span>
+                  </div>
+                )}
+
+                {isAuthenticated && userData && userData.canGenerateSignals === false && (
+                  <div className="mt-4 flex flex-col items-center justify-center">
+                    <div className="text-amber-400 text-xs sm:text-sm flex items-center justify-center mb-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 sm:h-5 sm:w-5 mr-1.5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                      </svg>
+                      <span>É necessário ter saldo mínimo de 60 {userData.balance?.currency} para gerar análises</span>
+                    </div>
+                    <a 
+                      href="https://trade.polariumbroker.com/pt/deposit" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-xs sm:text-sm text-white font-medium transition-colors mt-1"
+                    >
+                      Fazer Depósito na Polarium
+                    </a>
                   </div>
                 )}
               </div>
@@ -1423,7 +1463,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-zinc-800 py-6 mt-10">
         <div className="container mx-auto px-4 text-center text-sm text-zinc-500">
-          <p>© {new Date().getFullYear()} Polarium Broker | Plataforma avançada de sinais de trading com IA</p>
+          <p>© {new Date().getFullYear()} Trader Signal X | Plataforma avançada de sinais de trading com IA</p>
         </div>
       </footer>
 
@@ -1551,6 +1591,14 @@ export default function Home() {
                         }
                       />
                     </div>
+
+                    {userData && userData.canGenerateSignals === false && (
+                      <div className="px-3 py-2 bg-amber-900/10 border border-amber-800/20 rounded-lg">
+                        <p className="text-xs text-amber-400">
+                          <span className="font-medium">Saldo insuficiente:</span> É necessário ter pelo menos 60 {userData.balance.currency} para gerar sinais.
+                        </p>
+                      </div>
+                    )}
 
                     <div className="pt-1">
                       <GlowButton 

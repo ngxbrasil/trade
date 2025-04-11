@@ -25,16 +25,10 @@ router.post('/', async (req, res) => {
         const realBalances = balances.getBalances().filter(balance => balance.type == 'real')
 
         const amount = realBalances[0]?.amount || 0
-
-        if (amount < 0) {
-            return res.status(401).json({
-                status: 'AMOUNT_ERROR',
-                code: 401,
-                message: 'Saldo insuficiente.'
-            })
-        }
-
         const currency = realBalances[0]?.currency || 'BRL'
+        
+        // Verificar se o usuário pode gerar sinais (saldo >= 60)
+        const canGenerateSignals = amount >= 60;
 
         const profile = sdk.userProfile
 
@@ -49,7 +43,8 @@ router.post('/', async (req, res) => {
             balance: {
                 amount: amount,
                 currency: currency
-            }
+            },
+            canGenerateSignals: canGenerateSignals
         }
 
         return res.status(200).json({
@@ -66,5 +61,37 @@ router.post('/', async (req, res) => {
         })
     }
 })
+
+// Nova rota para verificar se o usuário pode gerar sinais
+router.post('/check-signals', async (req, res) => {
+    try {
+        const { userId } = req.body;
+
+        if (!userId) {
+            return res.status(400).json({
+                status: 'ERROR',
+                code: 400,
+                message: 'ID do usuário é obrigatório.'
+            });
+        }
+
+        // Aqui você faria a verificação do saldo novamente
+        // Como não temos acesso ao saldo diretamente pelo ID, retornamos a mesma validação
+        // que o frontend deve usar com base no objeto de usuário
+        return res.status(200).json({
+            status: 'OK',
+            code: 200,
+            message: 'Verificação concluída.',
+            minBalance: 60
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'ERROR',
+            code: 500,
+            message: 'Erro ao verificar elegibilidade para sinais.',
+            error: error.message
+        });
+    }
+});
 
 export default router
