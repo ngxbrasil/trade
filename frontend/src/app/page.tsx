@@ -635,7 +635,12 @@ export default function Home() {
       }
 
       // Fazer requisição real para o backend
-      const response = await fetch('http://localhost:5000/user', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        throw new Error("API URL não configurada. Verifique as variáveis de ambiente.");
+      }
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -765,7 +770,7 @@ export default function Home() {
       </ClientOnly>
 
       {/* Header com autenticação */}
-      <header className="pt-4 sm:pt-6 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      <header className="pt-4 sm:pt-6 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div>
@@ -1379,7 +1384,7 @@ export default function Home() {
                 <div className="bg-gradient-to-r from-blue-900/30 to-blue-800/30 border-b border-slate-700/50 p-3 sm:p-4 flex justify-between items-center">
                   <div className="flex items-center">
                     <Image 
-                      src="/polarium-logo.svg"
+                      src="/logo.png"
                       alt="Polarium Broker"
                       width={100}
                       height={25}
