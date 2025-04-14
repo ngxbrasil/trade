@@ -128,7 +128,12 @@ export default function ModernDropdown({
               </div>
             )}
             <div>
-              <div className="font-medium text-white">{selectedOption.label}</div>
+              <div className="font-medium text-white flex items-center">
+                {selectedOption.label}
+                {selectedOption.category === "DIGITAL_OTC" && (
+                  <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                )}
+              </div>
               {selectedOption.category && (
                 <div className="text-xs text-slate-400">{selectedOption.category}</div>
               )}
@@ -218,8 +223,11 @@ export default function ModernDropdown({
                               {iconMap[option.category]}
                             </div>
                           )}
-                          <div className={isSelected ? 'font-medium text-white' : 'text-slate-300'}>
+                          <div className={isSelected ? 'font-medium text-white flex items-center' : 'text-slate-300 flex items-center'}>
                             {option.label}
+                            {option.category === "DIGITAL_OTC" && (
+                              <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                            )}
                           </div>
                           {isSelected && (
                             <div className="ml-auto">
@@ -273,8 +281,11 @@ export default function ModernDropdown({
                           {iconMap[option.category]}
                         </div>
                       )}
-                      <div className={isSelected ? 'font-medium text-white' : 'text-slate-300'}>
+                      <div className={isSelected ? 'font-medium text-white flex items-center' : 'text-slate-300 flex items-center'}>
                         {option.label}
+                        {option.category === "DIGITAL_OTC" && (
+                          <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                        )}
                       </div>
                       {isSelected && (
                         <div className="ml-auto">

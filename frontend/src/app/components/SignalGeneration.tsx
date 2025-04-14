@@ -104,7 +104,12 @@ export default function SignalGeneration({
                 />
               </div>
               <div>
-                <div className="text-sm font-medium text-white">{selectedAsset}</div>
+                <div className="text-sm font-medium text-white flex items-center">
+                  {selectedAsset}
+                  {selectedCategory === "DIGITAL_OTC" && (
+                    <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                  )}
+                </div>
                 <div className="text-xs text-slate-400">{selectedCategory}</div>
               </div>
             </div>

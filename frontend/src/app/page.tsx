@@ -421,7 +421,12 @@ function AssetDropdown({
               </div>
             )}
             <div>
-              <div className="font-medium text-white">{selectedOption.label}</div>
+              <div className="font-medium text-white flex items-center">
+                {selectedOption.label}
+                {selectedOption.category === "DIGITAL_OTC" && (
+                  <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                )}
+              </div>
               {selectedOption.category && (
                 <div className="text-xs text-slate-400">{selectedOption.category}</div>
               )}
@@ -1089,7 +1094,12 @@ export default function Home() {
                                 className="rounded-sm"
                               />
                             </div>
-                            <span className="font-bold text-lg text-white">{generatedSignal.pair || generatedSignal.asset}</span>
+                            <div className="flex items-center">
+                              <span className="font-bold text-lg text-white">{generatedSignal.pair || generatedSignal.asset}</span>
+                              {selectedCategory === "DIGITAL_OTC" && (
+                                <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                              )}
+                            </div>
                           </div>
                           <div className="px-2 py-1 rounded bg-slate-800 text-xs">
                             {new Date().toLocaleDateString('pt-BR', {
@@ -1257,7 +1267,12 @@ export default function Home() {
                             />
                           </div>
                           <div>
-                            <span className="font-bold text-lg text-white">{generatedSignal.pair || generatedSignal.asset}</span>
+                            <div className="flex items-center">
+                              <span className="font-bold text-lg text-white">{generatedSignal.pair || generatedSignal.asset}</span>
+                              {selectedCategory === "DIGITAL_OTC" && (
+                                <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                              )}
+                            </div>
                             <div className="text-xs text-slate-400">
                               {new Date().toLocaleDateString('pt-BR', {
                                 weekday: 'short',
