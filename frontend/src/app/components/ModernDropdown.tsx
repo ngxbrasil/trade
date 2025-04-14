@@ -72,8 +72,8 @@ export default function ModernDropdown({
   // Determine the color for the category
   const getCategoryColor = (category: string) => {
     const categoryColors: { [key: string]: string } = {
-      DIGITAL_OTC: "from-cyan-500 to-violet-500",
-      DIGITAL: "from-blue-500 to-violet-600",
+      OTC: "from-cyan-500 to-violet-500",
+      DIGITAL: "from-violet-500 to-purple-500",
       default: "from-cyan-500 to-violet-500",
     };
     return categoryColors[category] || categoryColors.default;
@@ -84,7 +84,7 @@ export default function ModernDropdown({
     if (!category) return "border-blue-500 shadow-blue-500/20";
     
     switch (category) {
-      case "DIGITAL_OTC":
+      case "OTC":
         return "border-cyan-500 shadow-cyan-500/20";
       case "DIGITAL":
         return "border-violet-500 shadow-violet-500/20";
@@ -130,8 +130,8 @@ export default function ModernDropdown({
             <div>
               <div className="font-medium text-white flex items-center">
                 {selectedOption.label}
-                {selectedOption.category === "DIGITAL_OTC" && (
-                  <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                {selectedOption.category === "OTC" && (
+                  <span className="ml-1.5 text-[10px] bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent font-medium">OTC</span>
                 )}
               </div>
               {selectedOption.category && (
@@ -225,8 +225,8 @@ export default function ModernDropdown({
                           )}
                           <div className={isSelected ? 'font-medium text-white flex items-center' : 'text-slate-300 flex items-center'}>
                             {option.label}
-                            {option.category === "DIGITAL_OTC" && (
-                              <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                            {option.category === "OTC" && (
+                              <span className="ml-1.5 text-[10px] bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent font-medium">OTC</span>
                             )}
                           </div>
                           {isSelected && (
@@ -283,8 +283,8 @@ export default function ModernDropdown({
                       )}
                       <div className={isSelected ? 'font-medium text-white flex items-center' : 'text-slate-300 flex items-center'}>
                         {option.label}
-                        {option.category === "DIGITAL_OTC" && (
-                          <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                        {option.category === "OTC" && (
+                          <span className="ml-1.5 text-[10px] bg-gradient-to-r from-cyan-500 to-blue-500 bg-clip-text text-transparent font-medium">OTC</span>
                         )}
                       </div>
                       {isSelected && (

@@ -8,7 +8,7 @@ interface SignalGenerationProps {
   isGenerating: boolean
   onComplete: () => void
   selectedAsset?: string
-  selectedCategory?: "DIGITAL_OTC" | "DIGITAL" | "STOCKS" | ""
+  selectedCategory?: "OTC" | "DIGITAL" | "STOCKS" | ""
 }
 
 export default function SignalGeneration({
@@ -106,7 +106,7 @@ export default function SignalGeneration({
               <div>
                 <div className="text-sm font-medium text-white flex items-center">
                   {selectedAsset}
-                  {selectedCategory === "DIGITAL_OTC" && (
+                  {selectedCategory === "OTC" && (
                     <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
                   )}
                 </div>

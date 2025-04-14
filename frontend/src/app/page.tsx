@@ -10,14 +10,13 @@ import ClientOnly from "./components/ClientOnly"
 
 // Tipos de ativos disponíveis
 const ASSET_TYPES = {
-  DIGITAL_OTC: [
+  OTC: [
     { label: "EUR/USD", value: "EURUSD", icon: "/icons/EURUSD.png" },
     { label: "GBP/USD", value: "GBPUSD", icon: "/icons/GBPUSD.png" },
     { label: "USD/JPY", value: "USDJPY", icon: "/icons/USDJPY.png" },
     { label: "AUD/USD", value: "AUDUSD", icon: "/icons/AUDUSD.png" },
     { label: "USD/CAD", value: "USDCAD", icon: "/icons/USDCAD.png" },
     { label: "NZD/USD", value: "NZDUSD", icon: "/icons/NZDUSD.png" },
-    { label: "NZD/CHF", value: "NZDCHF", icon: "/icons/NZDCHF.png" },
     { label: "EUR/JPY", value: "EURJPY", icon: "/icons/EURJPY.png" },
     { label: "GBP/JPY", value: "GBPJPY", icon: "/icons/GBPJPY.png" },
   ],
@@ -28,12 +27,10 @@ const ASSET_TYPES = {
     { label: "AUD/USD", value: "AUDUSD", icon: "/icons/AUDUSD.png" },
     { label: "USD/CAD", value: "USDCAD", icon: "/icons/USDCAD.png" },
     { label: "NZD/USD", value: "NZDUSD", icon: "/icons/NZDUSD.png" },
-    { label: "NZD/CHF", value: "NZDCHF", icon: "/icons/NZDCHF.png" },
     { label: "EUR/JPY", value: "EURJPY", icon: "/icons/EURJPY.png" },
     { label: "GBP/JPY", value: "GBPJPY", icon: "/icons/GBPJPY.png" },
-
   ],
-}
+} as const
 
 interface UserData {
   id: string
@@ -52,14 +49,12 @@ interface UserData {
 
 interface Signal {
   asset: string;
-  action: "COMPRAR" | "VENDER" | "M1/CALL" | "M1/PUT";
-  timeframe: string;
-  validUntil: string;
-  entry?: string;
-  stop?: string;
-  target?: string;
-  pair?: string;
-  direction?: "COMPRA" | "VENDA" | "CALL" | "PUT";
+  pair: string;
+  direction: "CALL" | "PUT";
+  date?: string;
+  expiry?: string;
+  generatedCategory: "OTC" | "DIGITAL";
+  confidenceIndex?: number; // Add confidenceIndex to the Signal interface
 }
 
 // Componente GlowButton
@@ -306,7 +301,7 @@ interface AssetOption {
   label: string;
   value: string;
   icon?: string;
-  category: "DIGITAL_OTC" | "DIGITAL";
+  category: "OTC" | "DIGITAL";
 }
 
 interface AssetDropdownProps {
@@ -316,6 +311,7 @@ interface AssetDropdownProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  selectedCategory?: string; // Adicionar o selectedCategory como parâmetro
 }
 
 function AssetDropdown({
@@ -325,25 +321,38 @@ function AssetDropdown({
   placeholder = "Selecione um ativo financeiro",
   className = "",
   disabled = false,
+  selectedCategory = "", // Adicionar o selectedCategory com valor padrão
 }: AssetDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Encontrar a opção selecionada com base no valor
-  const selectedOption = options.find((option: AssetOption) => option.value === value || option.label === value);
+  // Encontrar a opção selecionada com base no valor e categoria
+  const selectedOption = options.find((option) => {
+    // Verificar se o valor/label e a categoria correspondem
+    if (value === option.value || value === option.label) {
+      // Se o dropdown já foi selecionado antes, usar a categoria correta do dropdown
+      if (typeof selectedCategory === 'string' && selectedCategory.length > 0) {
+        return option.category === selectedCategory;
+      }
+      // Caso contrário, apenas corresponder por valor
+      return true;
+    }
+    return false;
+  });
   
   // Filtrar opções baseado no termo de busca
-  const filteredOptions = options.filter((option: AssetOption) => 
+  const filteredOptions = options.filter((option) => 
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Agrupar opções por categoria
-  const groupedOptions = filteredOptions.reduce((acc: Record<string, AssetOption[]>, option: AssetOption) => {
-    if (!acc[option.category]) {
-      acc[option.category] = [];
+  const groupedOptions = filteredOptions.reduce((acc: Record<string, AssetOption[]>, option) => {
+    const category = option.category;
+    if (!acc[category]) {
+      acc[category] = [];
     }
-    acc[option.category].push(option);
+    acc[category].push(option);
     return acc;
   }, {});
 
@@ -364,16 +373,16 @@ function AssetDropdown({
     }
   }, [isOpen]);
 
-  // Alternar o dropdown
-  const toggleDropdown = () => {
-    if (!disabled) {
-      setIsOpen(!isOpen);
-    }
-  };
-
-  // Lidar com a seleção de uma opção
+  // Garantir que a categoria seja preservada corretamente ao selecionar um item
   const handleOptionClick = (option: AssetOption) => {
+    // Registrar a seleção para debug
+    console.log("Opção selecionada:", option);
+    console.log("Categoria da opção:", option.category);
+    
+    // Chamar o onChange com a opção completa
     onChange(option);
+    
+    // Fechar o dropdown e limpar a busca
     setIsOpen(false);
     setSearchTerm("");
   };
@@ -383,7 +392,7 @@ function AssetDropdown({
     if (!category) return "border-blue-500 shadow-blue-500/30";
     
     switch (category) {
-      case "DIGITAL_OTC":
+      case "OTC":
         return "border-cyan-500 shadow-cyan-500/30";
       case "DIGITAL":
         return "border-violet-500 shadow-violet-500/30";
@@ -397,7 +406,7 @@ function AssetDropdown({
       <button
         type="button"
         disabled={disabled}
-        onClick={toggleDropdown}
+        onClick={() => setIsOpen(!isOpen)}
         className={`w-full px-4 py-3 text-left rounded-lg shadow-sm focus:outline-none transition-all ${
           selectedOption 
             ? `bg-slate-900/90 border-2 ${getCategoryHighlight(selectedOption.category)} shadow-lg` 
@@ -408,7 +417,6 @@ function AssetDropdown({
       >
         {selectedOption ? (
           <div className="flex items-center">
-            {/* Ícone do ativo */}
             {selectedOption.icon && (
               <div className="w-8 h-8 mr-3 rounded-full bg-slate-800 flex items-center justify-center overflow-hidden border-2 border-slate-700 shadow-md">
                 <Image
@@ -423,13 +431,11 @@ function AssetDropdown({
             <div>
               <div className="font-medium text-white flex items-center">
                 {selectedOption.label}
-                {selectedOption.category === "DIGITAL_OTC" && (
+                {/* Mostrar badge de acordo com a categoria armazenada no estado, não na opção selecionada */}
+                {selectedCategory === "OTC" && (
                   <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
                 )}
               </div>
-              {selectedOption.category && (
-                <div className="text-xs text-slate-400">{selectedOption.category}</div>
-              )}
             </div>
             <div className="ml-auto">
               <svg 
@@ -485,7 +491,7 @@ function AssetDropdown({
                     const isSelected = option.value === value || option.label === value;
                     return (
                       <div
-                        key={option.value}
+                        key={`${option.value}-${option.category}`}
                         className={`px-4 py-2 cursor-pointer flex items-center relative ${
                           isSelected 
                             ? `bg-slate-800 border-l-2 ${getCategoryHighlight(option.category)}`
@@ -510,7 +516,7 @@ function AssetDropdown({
                         <div className={isSelected ? 'font-medium text-white' : 'text-slate-300'}>
                           {option.label}
                         </div>
-                        {option.category === "DIGITAL_OTC" && (
+                        {option.category === "OTC" && (
                           <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
                         )}
                         {isSelected && (
@@ -608,11 +614,12 @@ export default function Home() {
 
   // Estados para geração de sinais
   const [selectedAsset, setSelectedAsset] = useState<string>("")
-  const [selectedCategory, setSelectedCategory] = useState<"DIGITAL_OTC" | "DIGITAL" | "">("")
+  const [selectedCategory, setSelectedCategory] = useState<"OTC" | "DIGITAL" | "">("")
   const [isGeneratingSignal, setIsGeneratingSignal] = useState(false)
   const [generatedSignal, setGeneratedSignal] = useState<Signal | null>(null)
   // Adicionar estado para controlar se o sinal foi confirmado
   const [signalConfirmed, setSignalConfirmed] = useState(false)
+  const [isSignalModalOpen, setIsSignalModalOpen] = useState(false)
 
   const handleConfirmSignal = () => {
     setSignalConfirmed(true)
@@ -650,7 +657,7 @@ export default function Home() {
       }
 
       // Fazer requisição real para o backend
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001";
       if (!apiUrl) {
         throw new Error("API URL não configurada. Verifique as variáveis de ambiente.");
       }
@@ -719,47 +726,54 @@ export default function Home() {
     setIsGeneratingSignal(true)
   }
 
-  const handleSignalGenerationComplete = () => {
-    // Usar um seed estável para gerar o valor
-    const now = new Date()
-    const seed = now.getHours() * 60 + now.getMinutes()
-    const isCall = seed % 2 === 0
-    const action = isCall ? "M1/CALL" : "M1/PUT"
-    
-    // Resetar status de confirmação do sinal
-    setSignalConfirmed(false)
+  // Função para formatar a data
+  const formatDate = (date: Date): string => {
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
 
-    // Calcular a validade (5 minutos no futuro)
-    const validUntil = new Date(now.getTime() + 300000)
+  // Função para gerar tempo de expiração aleatório
+  const getRandomExpiry = (): string => {
+    const expiries = ["1 min", "5 min", "15 min", "30 min"];
+    return expiries[Math.floor(Math.random() * expiries.length)];
+  };
+
+  const handleSignalGenerationComplete = () => {
+    // Gera o sinal com todos os dados necessários
+    const currentDate = new Date();
+    const formattedDate = formatDate(currentDate);
     
-    // Gerar valores aleatórios para entrada, stop e alvo
-    const basePrice = 100 + (seed % 100)
-    const entryPoint = basePrice.toFixed(2)
-    const stopLoss = isCall ? (basePrice * 0.95).toFixed(2) : (basePrice * 1.05).toFixed(2)
-    const takeProfit = isCall ? (basePrice * 1.1).toFixed(2) : (basePrice * 0.9).toFixed(2)
+    // Generate a fixed confidence index between 89-99%
+    const confidenceIndex = 89 + Math.round(Math.random() * 10);
     
+    // Garantir que a categoria seja preservada no momento da geração
     setGeneratedSignal({
       asset: selectedAsset,
-      action: action as "M1/CALL" | "M1/PUT",
-      validUntil: validUntil.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-      timeframe: "5 minutos",
       pair: selectedAsset,
-      entry: entryPoint,
-      stop: stopLoss,
-      target: takeProfit,
-      direction: isCall ? "CALL" : "PUT"
-    })
-
-    setIsGeneratingSignal(false)
-  }
+      direction: Math.random() > 0.5 ? "CALL" : "PUT",
+      date: formattedDate,
+      expiry: getRandomExpiry(),
+      generatedCategory: selectedCategory as "OTC" | "DIGITAL",
+      confidenceIndex: confidenceIndex // Save the confidence index in the signal
+    });
+    
+    console.log("Sinal gerado com categoria:", selectedCategory);
+    
+    // Abre o modal do sinal
+    setIsSignalModalOpen(true);
+    setIsGeneratingSignal(false);
+  };
 
   // Preparar opções para o dropdown
   const dropdownOptions: AssetOption[] = [
-    ...ASSET_TYPES.DIGITAL_OTC.map((asset) => ({
+    ...ASSET_TYPES.OTC.map((asset) => ({
       label: asset.label,
       value: asset.value,
       icon: asset.icon,
-      category: "DIGITAL_OTC" as const,
+      category: "OTC" as const,
     })),
     ...ASSET_TYPES.DIGITAL.map((asset) => ({
       label: asset.label,
@@ -768,6 +782,54 @@ export default function Home() {
       category: "DIGITAL" as const,
     })),
   ]
+
+  // Função para encontrar a opção correta com base no valor e categoria
+  const findOption = (value: string, category?: "OTC" | "DIGITAL") => {
+    if (category) {
+      // Buscar especificamente pela combinação valor + categoria
+      const option = dropdownOptions.find(
+        (option) => 
+          (option.value === value || option.label === value) && 
+          option.category === category
+      );
+      return option;
+    }
+    
+    // Se não foi especificada uma categoria, buscar apenas por valor
+    const option = dropdownOptions.find(
+      (option) => option.value === value || option.label === value
+    );
+    console.log("Buscando opção apenas por valor:", { value, found: option });
+    return option;
+  };
+
+  // Atualizar o estado quando um ativo é selecionado
+  const handleAssetChange = (option: AssetOption) => {
+    console.log("Asset selecionado:", option);
+    console.log("Categoria do asset:", option.category);
+    
+    // Garantir que estado e categoria sejam atualizados corretamente
+    setSelectedAsset(option.label);
+    setSelectedCategory(option.category);
+    
+    // Debug: verificar estado após atualização
+    setTimeout(() => {
+      console.log("Estado atual:", { 
+        selectedAsset, 
+        selectedCategory,
+        opção: option 
+      });
+    }, 0);
+  };
+
+  // Vamos criar uma função auxiliar para verificar a categoria
+  const isDigitalOTC = (category: string | undefined): boolean => 
+    category === "OTC";
+
+  // Adicionar função auxiliar para determinar se a operação é CALL ou PUT
+  const getOperationType = (signal: Signal) => {
+    return signal.direction === "CALL" ? "CALL" : "PUT";
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 overflow-hidden">
@@ -914,13 +976,11 @@ export default function Home() {
                   <AssetDropdown
                     options={dropdownOptions}
                     value={selectedAsset}
-                    onChange={(option) => {
-                      setSelectedAsset(option.label)
-                      setSelectedCategory(option.category)
-                    }}
+                    onChange={handleAssetChange}
                     placeholder="Selecione um Ativo financeiro"
                     className="mb-4 sm:mb-6"
                     disabled={!isAuthenticated}
+                    selectedCategory={selectedCategory}
                   />
                   <p className="text-center text-slate-400 text-xs sm:text-sm mt-3 sm:mt-4">
                     {isAuthenticated 
@@ -1084,7 +1144,7 @@ export default function Home() {
                             <div className="w-7 h-7 rounded-md flex items-center justify-center bg-slate-800 border border-slate-700 mr-2">
                               <Image 
                                 src={
-                                  ASSET_TYPES.DIGITAL_OTC.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
+                                  ASSET_TYPES.OTC.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
                                   ASSET_TYPES.DIGITAL.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
                                   "/placeholder.svg?height=20&width=20"
                                 }
@@ -1096,33 +1156,39 @@ export default function Home() {
                             </div>
                             <div className="flex items-center">
                               <span className="font-bold text-lg text-white">{generatedSignal.pair || generatedSignal.asset}</span>
-                              {selectedCategory === "DIGITAL_OTC" && (
+                              {generatedSignal.generatedCategory === "OTC" && (
                                 <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                              )}
+                              {generatedSignal.generatedCategory === "DIGITAL" && (
+                                <span className="ml-2 px-1.5 py-0.5 bg-violet-500/20 text-violet-400 text-[10px] rounded-full border border-violet-500/30">DIGITAL</span>
                               )}
                             </div>
                           </div>
                           <div className="px-2 py-1 rounded bg-slate-800 text-xs">
                             {new Date().toLocaleDateString('pt-BR', {
+                              weekday: 'short',
                               day: '2-digit',
                               month: '2-digit',
-                              year: '2-digit'
+                              year: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
                             })}
                           </div>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-4">
                           <div className={`px-3 py-2 rounded-lg border border-slate-700/50 bg-slate-800/50 ${
-                            generatedSignal.direction === "CALL" || generatedSignal.action.includes("CALL") 
+                            generatedSignal.direction === "CALL" 
                               ? "border-green-700/30" 
                               : "border-red-700/30"
                           }`}>
                             <div className="text-xs text-slate-400 mb-1">Operação</div>
                             <div className={`text-base font-semibold ${
-                              generatedSignal.direction === "CALL" || generatedSignal.action.includes("CALL") 
+                              generatedSignal.direction === "CALL" 
                                 ? "text-green-400" 
                                 : "text-red-400"
                             }`}>
-                              {generatedSignal.direction || (generatedSignal.action.includes("CALL") ? "M1/CALL" : "M1/PUT")}
+                              {generatedSignal.direction === "CALL" ? "M1/CALL" : "M1/PUT"}
                             </div>
                           </div>
                           
@@ -1137,7 +1203,7 @@ export default function Home() {
                           <div className="h-2 w-full bg-slate-700/50 rounded-full overflow-hidden">
                             <div 
                               className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full" 
-                              style={{ width: `${89 + Math.round(Math.random() * 10)}%` }}
+                              style={{ width: `${generatedSignal.confidenceIndex}%` }}
                             ></div>
                           </div>
                         </div>
@@ -1256,7 +1322,7 @@ export default function Home() {
                           <div className="w-8 h-8 rounded-md flex items-center justify-center bg-slate-800 border border-slate-700 mr-3">
                             <Image 
                               src={
-                                ASSET_TYPES.DIGITAL_OTC.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
+                                ASSET_TYPES.OTC.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
                                 ASSET_TYPES.DIGITAL.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
                                 "/placeholder.svg?height=24&width=24"
                               }
@@ -1269,8 +1335,11 @@ export default function Home() {
                           <div>
                             <div className="flex items-center">
                               <span className="font-bold text-lg text-white">{generatedSignal.pair || generatedSignal.asset}</span>
-                              {selectedCategory === "DIGITAL_OTC" && (
+                              {generatedSignal.generatedCategory === "OTC" && (
                                 <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
+                              )}
+                              {generatedSignal.generatedCategory === "DIGITAL" && (
+                                <span className="ml-2 px-1.5 py-0.5 bg-violet-500/20 text-violet-400 text-[10px] rounded-full border border-violet-500/30">DIGITAL</span>
                               )}
                             </div>
                             <div className="text-xs text-slate-400">
@@ -1289,17 +1358,17 @@ export default function Home() {
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                         <div className={`px-3 py-2.5 rounded-lg border bg-slate-800/50 ${
-                          generatedSignal.direction === "CALL" || generatedSignal.action.includes("CALL") 
+                          generatedSignal.direction === "CALL" 
                             ? "border-green-700/30" 
                             : "border-red-700/30"
                         }`}>
                           <div className="text-xs text-slate-400 mb-1">Operação</div>
                           <div className={`text-lg font-mono font-semibold ${
-                            generatedSignal.direction === "CALL" || generatedSignal.action.includes("CALL") 
+                            generatedSignal.direction === "CALL" 
                               ? "text-green-400" 
                               : "text-red-400"
                           }`}>
-                            {generatedSignal.direction || (generatedSignal.action.includes("CALL") ? "M1/CALL" : "M1/PUT")}
+                            {generatedSignal.direction === "CALL" ? "M1/CALL" : "M1/PUT"}
                           </div>
                         </div>
                         
@@ -1312,12 +1381,12 @@ export default function Home() {
                       <div className="px-3 py-3 rounded-lg border border-slate-700/50 bg-slate-800/50 mb-4">
                         <div className="flex justify-between items-center mb-1">
                           <div className="text-xs text-slate-400">Índice de Confiança</div>
-                          <div className="text-xs font-semibold text-blue-400">{89 + Math.round(Math.random() * 10)}%</div>
+                          <div className="text-xs font-semibold text-blue-400">{generatedSignal.confidenceIndex}%</div>
                         </div>
                         <div className="h-2 w-full bg-slate-700/50 rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-gradient-to-r from-blue-600 to-blue-400 rounded-full" 
-                            style={{ width: `${89 + Math.round(Math.random() * 10)}%` }}
+                            style={{ width: `${generatedSignal.confidenceIndex}%` }}
                           ></div>
                         </div>
                       </div>
