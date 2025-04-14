@@ -476,8 +476,8 @@ function AssetDropdown({
                   <div className="sticky top-0 px-3 py-2 bg-slate-800/90 backdrop-blur-sm text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-700 z-[5]">
                     {category === "DIGITAL_OTC" ? (
                       <div className="flex items-center">
-                        <span>OTC</span>
-                        <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">DIGITAL</span>
+                        <span>DIGITAL</span>
+                        <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">OTC</span>
                       </div>
                     ) : (
                       category
