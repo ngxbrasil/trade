@@ -7,11 +7,11 @@ import cors from 'cors'
 
 const app = express()
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT;
 
 // Configuração do CORS
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001',  'https://iatradersignalsx.online'],
+    origin: ['http://localhost:3000', 'http://localhost:3001',  'https://iatradersignalsx.online', 'https://api.iatradersignalsx.online'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
