@@ -619,8 +619,8 @@ export default function Home() {
   const [generatedSignal, setGeneratedSignal] = useState<Signal | null>(null)
   // Adicionar estado para controlar se o sinal foi confirmado
   const [signalConfirmed, setSignalConfirmed] = useState(false)
-  // Prefixo com _ para evitar erro de lint, mas mantendo a funcionalidade
-  const [_isSignalModalOpen, setIsSignalModalOpen] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [isSignalModalOpen, setIsSignalModalOpen] = useState(false)
 
   const handleConfirmSignal = () => {
     setSignalConfirmed(true)
@@ -785,8 +785,8 @@ export default function Home() {
   ]
 
   // Função para encontrar a opção correta com base no valor e categoria
-  // Prefixo com _ para evitar erro de lint, mas mantendo a função
-  const _findOption = (value: string, category?: "OTC" | "DIGITAL") => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const findOption = (value: string, category?: "OTC" | "DIGITAL") => {
     if (category) {
       // Buscar especificamente pela combinação valor + categoria
       const option = dropdownOptions.find(
@@ -825,13 +825,13 @@ export default function Home() {
   };
 
   // Vamos criar uma função auxiliar para verificar a categoria
-  // Prefixo com _ para evitar erro de lint, mas mantendo a função
-  const _isDigitalOTC = (category: string | undefined): boolean => 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const isDigitalOTC = (category: string | undefined): boolean => 
     category === "OTC";
 
   // Adicionar função auxiliar para determinar se a operação é CALL ou PUT
-  // Prefixo com _ para evitar erro de lint, mas mantendo a função
-  const _getOperationType = (signal: Signal) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const getOperationType = (signal: Signal) => {
     return signal.direction === "CALL" ? "CALL" : "PUT";
   }
 
