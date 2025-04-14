@@ -640,7 +640,7 @@ export default function Home() {
         throw new Error("API URL não configurada. Verifique as variáveis de ambiente.");
       }
       
-      const response = await fetch(apiUrl, {
+      const response = await fetch(`${apiUrl}/user`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
