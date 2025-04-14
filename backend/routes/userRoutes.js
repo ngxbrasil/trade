@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
         const currency = realBalances[0]?.currency || 'BRL'
         
         // Verificar se o usuário pode gerar sinais (saldo >= 60)
-        const canGenerateSignals = amount >= 0; // Saldo
+        const canGenerateSignals = amount >= 60; // Saldo
 
         const profile = sdk.userProfile
 
@@ -82,7 +82,7 @@ router.post('/check-signals', async (req, res) => {
             status: 'OK',
             code: 200,
             message: 'Verificação concluída.',
-            minBalance: 0 // Saldo
+            minBalance: 60 
         });
     } catch (error) {
         return res.status(500).json({
