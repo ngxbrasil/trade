@@ -10,11 +10,11 @@ import ClientOnly from "./components/ClientOnly"
 
 // Tipos de ativos disponíveis
 const ASSET_TYPES = {
-  CRYPTO: [
+  DIGITAL_OTC: [
     { label: "BTC/USD", value: "BTCUSD", icon: "/icons/BTCUSD.png" },
     { label: "ETH/USD", value: "ETHUSD", icon: "/icons/ETHUSD.png" },
   ],
-  FOREX: [
+  OTC: [
     { label: "EUR/USD", value: "EURUSD", icon: "/icons/EURUSD.png" },
     { label: "GBP/USD", value: "GBPUSD", icon: "/icons/GBPUSD.png" },
     { label: "USD/JPY", value: "USDJPY", icon: "/icons/USDJPY.png" },
@@ -299,7 +299,7 @@ interface AssetOption {
   label: string;
   value: string;
   icon?: string;
-  category: "CRYPTO" | "FOREX";
+  category: "DIGITAL_OTC" | "DIGITAL";
 }
 
 interface AssetDropdownProps {
@@ -376,9 +376,9 @@ function AssetDropdown({
     if (!category) return "border-blue-500 shadow-blue-500/30";
     
     switch (category) {
-      case "CRYPTO":
+      case "DIGITAL_OTC":
         return "border-cyan-500 shadow-cyan-500/30";
-      case "FOREX":
+      case "DIGITAL":
         return "border-violet-500 shadow-violet-500/30";
       default:
         return "border-blue-500 shadow-blue-500/30";
@@ -593,7 +593,7 @@ export default function Home() {
 
   // Estados para geração de sinais
   const [selectedAsset, setSelectedAsset] = useState<string>("")
-  const [selectedCategory, setSelectedCategory] = useState<"CRYPTO" | "FOREX" | "">("")
+  const [selectedCategory, setSelectedCategory] = useState<"DIGITAL_OTC" | "DIGITAL" | "">("")
   const [isGeneratingSignal, setIsGeneratingSignal] = useState(false)
   const [generatedSignal, setGeneratedSignal] = useState<Signal | null>(null)
   // Adicionar estado para controlar se o sinal foi confirmado
@@ -740,17 +740,17 @@ export default function Home() {
 
   // Preparar opções para o dropdown
   const dropdownOptions: AssetOption[] = [
-    ...ASSET_TYPES.CRYPTO.map((asset) => ({
+    ...ASSET_TYPES.DIGITAL_OTC.map((asset) => ({
       label: asset.label,
       value: asset.value,
       icon: asset.icon,
-      category: "CRYPTO" as const,
+      category: "DIGITAL_OTC" as const,
     })),
-    ...ASSET_TYPES.FOREX.map((asset) => ({
+    ...ASSET_TYPES.DIGITAL.map((asset) => ({
       label: asset.label,
       value: asset.value,
       icon: asset.icon,
-      category: "FOREX" as const,
+      category: "DIGITAL" as const,
     })),
   ]
 
@@ -1069,8 +1069,8 @@ export default function Home() {
                             <div className="w-7 h-7 rounded-md flex items-center justify-center bg-slate-800 border border-slate-700 mr-2">
                               <Image 
                                 src={
-                                  ASSET_TYPES.CRYPTO.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
-                                  ASSET_TYPES.FOREX.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
+                                  ASSET_TYPES.DIGITAL_OTC.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
+                                  ASSET_TYPES.DIGITAL.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
                                   "/placeholder.svg?height=20&width=20"
                                 }
                                 alt={generatedSignal.asset}
@@ -1236,8 +1236,8 @@ export default function Home() {
                           <div className="w-8 h-8 rounded-md flex items-center justify-center bg-slate-800 border border-slate-700 mr-3">
                             <Image 
                               src={
-                                ASSET_TYPES.CRYPTO.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
-                                ASSET_TYPES.FOREX.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
+                                ASSET_TYPES.DIGITAL_OTC.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
+                                ASSET_TYPES.DIGITAL.find(asset => asset.value === generatedSignal.asset || asset.label === generatedSignal.asset)?.icon ||
                                 "/placeholder.svg?height=24&width=24"
                               }
                               alt={generatedSignal.asset}

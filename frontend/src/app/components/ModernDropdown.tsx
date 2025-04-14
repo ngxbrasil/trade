@@ -72,8 +72,8 @@ export default function ModernDropdown({
   // Determine the color for the category
   const getCategoryColor = (category: string) => {
     const categoryColors: { [key: string]: string } = {
-      CRYPTO: "from-cyan-500 to-violet-500",
-      FOREX: "from-blue-500 to-violet-600",
+      DIGITAL_OTC: "from-cyan-500 to-violet-500",
+      DIGITAL: "from-blue-500 to-violet-600",
       default: "from-cyan-500 to-violet-500",
     };
     return categoryColors[category] || categoryColors.default;
@@ -84,9 +84,9 @@ export default function ModernDropdown({
     if (!category) return "border-blue-500 shadow-blue-500/20";
     
     switch (category) {
-      case "CRYPTO":
+      case "DIGITAL_OTC":
         return "border-cyan-500 shadow-cyan-500/20";
-      case "FOREX":
+      case "DIGITAL":
         return "border-violet-500 shadow-violet-500/20";
       default:
         return "border-blue-500 shadow-blue-500/20";

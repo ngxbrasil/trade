@@ -8,7 +8,7 @@ interface SignalGenerationProps {
   isGenerating: boolean
   onComplete: () => void
   selectedAsset?: string
-  selectedCategory?: "CRYPTO" | "FOREX" | "STOCKS" | ""
+  selectedCategory?: "DIGITAL_OTC" | "DIGITAL" | "STOCKS" | ""
 }
 
 export default function SignalGeneration({
