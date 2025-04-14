@@ -589,7 +589,7 @@ export default function Home() {
   const [error, setError] = useState("")
 
   // Referência à Polarium Broker
-  const polariumLoginUrl = "https://trade.polariumbroker.com/pt/login"
+  const polariumLoginUrl = "https://trade.polariumbroker.com/register?aff=753247&aff_model=revenue&afftrack="
 
   // Estados para geração de sinais
   const [selectedAsset, setSelectedAsset] = useState<string>("")
