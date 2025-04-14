@@ -11,10 +11,17 @@ import ClientOnly from "./components/ClientOnly"
 // Tipos de ativos disponíveis
 const ASSET_TYPES = {
   DIGITAL_OTC: [
-    { label: "BTC/USD", value: "BTCUSD", icon: "/icons/BTCUSD.png" },
-    { label: "ETH/USD", value: "ETHUSD", icon: "/icons/ETHUSD.png" },
+    { label: "EUR/USD", value: "EURUSD", icon: "/icons/EURUSD.png" },
+    { label: "GBP/USD", value: "GBPUSD", icon: "/icons/GBPUSD.png" },
+    { label: "USD/JPY", value: "USDJPY", icon: "/icons/USDJPY.png" },
+    { label: "AUD/USD", value: "AUDUSD", icon: "/icons/AUDUSD.png" },
+    { label: "USD/CAD", value: "USDCAD", icon: "/icons/USDCAD.png" },
+    { label: "NZD/USD", value: "NZDUSD", icon: "/icons/NZDUSD.png" },
+    { label: "NZD/CHF", value: "NZDCHF", icon: "/icons/NZDCHF.png" },
+    { label: "EUR/JPY", value: "EURJPY", icon: "/icons/EURJPY.png" },
+    { label: "GBP/JPY", value: "GBPJPY", icon: "/icons/GBPJPY.png" },
   ],
-  OTC: [
+  DIGITAL: [
     { label: "EUR/USD", value: "EURUSD", icon: "/icons/EURUSD.png" },
     { label: "GBP/USD", value: "GBPUSD", icon: "/icons/GBPUSD.png" },
     { label: "USD/JPY", value: "USDJPY", icon: "/icons/USDJPY.png" },
@@ -467,7 +474,14 @@ function AssetDropdown({
               {Object.entries(groupedOptions).map(([category, categoryOptions]) => (
                 <div key={category}>
                   <div className="sticky top-0 px-3 py-2 bg-slate-800/90 backdrop-blur-sm text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-slate-700 z-[5]">
-                    {category}
+                    {category === "DIGITAL_OTC" ? (
+                      <div className="flex items-center">
+                        <span>OTC</span>
+                        <span className="ml-2 px-1.5 py-0.5 bg-amber-500/20 text-amber-400 text-[10px] rounded-full border border-amber-500/30">DIGITAL</span>
+                      </div>
+                    ) : (
+                      category
+                    )}
                   </div>
                   {categoryOptions.map((option) => {
                     const isSelected = option.value === value || option.label === value;
