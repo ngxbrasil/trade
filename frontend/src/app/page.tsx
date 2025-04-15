@@ -706,6 +706,7 @@ export default function Home() {
           }
         } catch (err) {
           console.error(`Error with endpoint ${endpoint}:`, err);
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
           lastError = err;
         }
       }
