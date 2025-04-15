@@ -663,13 +663,61 @@ export default function Home() {
         throw new Error("API URL não configurada. Verifique as variáveis de ambiente.");
       }
       
-      const response = await fetch(`${apiUrl}/user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      console.log("Attempting to connect to API URL:", apiUrl);
+      
+      // Verificar se o servidor está ativo
+      try {
+        const pingResponse = await fetch(`${apiUrl}`, { method: 'GET' });
+        console.log("Server ping status:", pingResponse.status);
+      } catch (pingErr) {
+        console.error("Server ping failed:", pingErr);
+      }
+      
+      // Lista de possíveis endpoints para tentar
+      const possibleEndpoints = [
+        `${apiUrl}/user`,         // Padrão 
+        `${apiUrl}/api/user`,     // Com prefixo /api
+        `${apiUrl}/auth`,         // Possível rota alternativa
+        `${apiUrl}/api/auth`      // Outra possível rota
+      ];
+      
+      let response = null;
+      let lastError = null;
+      
+      // Tentar cada endpoint até encontrar um que funcione
+      for (const endpoint of possibleEndpoints) {
+        try {
+          console.log("Trying endpoint:", endpoint);
+          
+          const resp = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password }),
+          });
+          
+          console.log(`Response from ${endpoint}:`, resp.status);
+          
+          // Se não for 404, temos uma resposta válida (seja sucesso ou erro)
+          if (resp.status !== 404) {
+            response = resp;
+            break;
+          }
+        } catch (err) {
+          console.error(`Error with endpoint ${endpoint}:`, err);
+          lastError = err;
+        }
+      }
+      
+      // Se não conseguimos uma resposta de nenhum endpoint
+      if (!response) {
+        throw new Error("Não foi possível conectar ao servidor. Verifique sua conexão ou tente novamente mais tarde.");
+      }
+
+      // Log da resposta completa para debug
+      console.log("Final response status:", response.status);
+      console.log("Final response headers:", Object.fromEntries([...response.headers]));
 
       // Check content type to avoid JSON parse errors
       const contentType = response.headers.get("content-type");
@@ -694,6 +742,7 @@ export default function Home() {
       setShowLoginModal(false);
     } catch (err: unknown) {
       const error = err as Error;
+      console.error("Login error:", error);
       setError(error.message || "Falha ao fazer login. Tente novamente.")
     } finally {
       setLoading(false)
