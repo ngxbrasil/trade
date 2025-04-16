@@ -50,6 +50,8 @@ app.get('/', (req, res) => {
     res.status(200).send('API está funcionando!');
 })
 
+// Criar um servidor HTTP com configurações de timeout aprimoradas
+const server = http.createServer(app);
 
 
 // Tratamento de erros para evitar que o servidor caia
