@@ -122,7 +122,7 @@ async function testLocalUserRoute() {
   console.log('\n=== TESTE 3: Rota /user do Backend Local ===');
   try {
     // URL do backend local - assumindo que esteja rodando na porta 3001
-    const localBackendUrl = 'http://localhost:3001';
+    const localBackendUrl = 'http://localhost:3000';
     
     console.log(`Testando rota POST /user no backend local (${localBackendUrl}/user)...`);
     
@@ -270,7 +270,7 @@ async function runTests() {
     if (!userRouteSuccess) {
       console.log('\n⚠️ TESTE LOCAL FALHOU');
       console.log('Sugestões:');
-      console.log('1. Verifique se o servidor backend está rodando na porta 3001');
+      console.log('1. Verifique se o servidor backend está rodando na porta 3000');
       console.log('2. Confira os logs do servidor para ver detalhes do erro');
       console.log('3. Verifique se as variáveis de ambiente estão configuradas corretamente');
     }

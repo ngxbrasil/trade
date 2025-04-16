@@ -7,7 +7,7 @@ import http from 'http';
 dotenv.config();
 
 // Configurações
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 5000;
 const CHECK_INTERVAL = 60 * 1000; // Verificar a cada 1 minuto
 const healthEndpoint = `http://localhost:${port}/health`;
 const userCheckEndpoint = `http://localhost:${port}/user/check`;
