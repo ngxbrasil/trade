@@ -4,7 +4,7 @@ dotenv.config()
 
 import express from 'express'
 import cors from 'cors'
-import http from 'http'
+
 
 const app = express()
 
@@ -50,19 +50,6 @@ app.get('/', (req, res) => {
     res.status(200).send('API está funcionando!');
 })
 
-// Criar um servidor HTTP com configurações de timeout aprimoradas
-const server = http.createServer(app);
-
-
-// Tratamento de erros para evitar que o servidor caia
-process.on('uncaughtException', (err) => {
-    console.error(`[${new Date().toISOString()}] Erro não tratado: ${err.message}`);
-    console.error(err.stack);
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-    console.error(`[${new Date().toISOString()}] Rejeição não tratada: ${reason}`);
-});
 
 server.listen(port, '0.0.0.0', () => {
     console.log(`[Polarium API] Sistema inicializado com sucesso.`)
