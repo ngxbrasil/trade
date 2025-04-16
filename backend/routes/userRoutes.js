@@ -11,6 +11,14 @@ const CACHE_EXPIRY = 15 * 60 * 1000; // 15 minutos em milissegundos
 // Função para tentar conectar à API externa com retentativas
 async function connectWithRetries(email, password, attempts = 3) {
     let lastError;
+    
+    // Log detalhado dos parâmetros de conexão (exceto senha)
+    console.log(`[AuthParams] Tentando conectar com os seguintes parâmetros:`);
+    console.log(`[AuthParams] WEBSOCKET_API_ENDPOINT: ${process.env.WEBSOCKET_API_ENDPOINT}`);
+    console.log(`[AuthParams] PLATFORM_ID: ${process.env.PLATFORM_ID}`);
+    console.log(`[AuthParams] API_URL: ${process.env.API_URL}`);
+    console.log(`[AuthParams] Email: ${email}`);
+    
     for (let i = 0; i < attempts; i++) {
         try {
             console.log(`[AuthAttempt] Tentativa ${i+1} para ${email}`);
@@ -20,13 +28,22 @@ async function connectWithRetries(email, password, attempts = 3) {
                 process.env.PLATFORM_ID,
                 new LoginPasswordAuthMethod(process.env.API_URL, email, password),
                 // Adicionando timeout para a conexão
-                { timeout: 10000 } // 10 segundos de timeout
+                { timeout: 15000 } // Aumentado para 15 segundos
             );
 
             console.log(`[AuthSuccess] Conectado com sucesso para ${email}`);
             return sdk;
         } catch (error) {
             console.error(`[AuthError] Tentativa ${i+1} falhou: ${error.message}`);
+            console.error(`[AuthError] Stack: ${error.stack}`);
+            
+            // Log detalhado do erro
+            if (error.response) {
+                console.error(`[AuthError] Resposta da API: ${JSON.stringify(error.response.data || {})}`);
+                console.error(`[AuthError] Status: ${error.response.status}`);
+                console.error(`[AuthError] Headers: ${JSON.stringify(error.response.headers || {})}`);
+            }
+            
             lastError = error;
             
             // Aguardar antes da próxima tentativa (tempo exponencial)
@@ -39,6 +56,58 @@ async function connectWithRetries(email, password, attempts = 3) {
     
     // Se chegou aqui, todas as tentativas falharam
     throw lastError;
+}
+
+// Função para tentar login com configurações alternativas
+async function tryAlternativeLogin(email, password) {
+    console.log(`[AlternativeLogin] Tentando login com configurações alternativas para ${email}`);
+    
+    // Lista de alternativas para tentar (em ordem de prioridade)
+    const alternatives = [
+        // Alternativa 1: Usar a URL original
+        {
+            websocketEndpoint: process.env.WEBSOCKET_API_ENDPOINT,
+            platformId: process.env.PLATFORM_ID,
+            apiUrl: process.env.API_URL,
+            name: "Configuração original"
+        },
+        // Alternativa 2: Usar URL sem HTTPS (em alguns casos pode funcionar)
+        {
+            websocketEndpoint: process.env.WEBSOCKET_API_ENDPOINT,
+            platformId: process.env.PLATFORM_ID,
+            apiUrl: process.env.API_URL.replace('https://', 'http://'),
+            name: "URL sem HTTPS"
+        },
+        // Alternativa 3: Tentar URL alternativa comum para essa plataforma
+        {
+            websocketEndpoint: process.env.WEBSOCKET_API_ENDPOINT,
+            platformId: process.env.PLATFORM_ID,
+            apiUrl: "https://trade.polariumbroker.com/api",
+            name: "URL com /api"
+        }
+    ];
+    
+    // Tentar cada alternativa em sequência
+    for (const config of alternatives) {
+        try {
+            console.log(`[AlternativeLogin] Tentando com: ${config.name}`);
+            console.log(`[AlternativeLogin] API URL: ${config.apiUrl}`);
+            
+            const sdk = await ClientSdk.create(
+                config.websocketEndpoint,
+                config.platformId,
+                new LoginPasswordAuthMethod(config.apiUrl, email, password),
+                { timeout: 15000 }
+            );
+            
+            console.log(`[AlternativeLogin] Sucesso com: ${config.name}`);
+            return sdk;
+        } catch (error) {
+            console.error(`[AlternativeLogin] Falha com ${config.name}: ${error.message}`);
+        }
+    }
+    
+    throw new Error("Todas as alternativas de login falharam");
 }
 
 // Limpador periódico de cache expirado
@@ -63,6 +132,8 @@ router.post('/', async (req, res) => {
     const startTime = Date.now();
     try {
         const { email, password } = req.body
+
+        console.log(`[Login] Recebido pedido de login para: ${email}`);
 
         if (!email || !password) {
             return res.status(400).json({
@@ -98,8 +169,21 @@ router.post('/', async (req, res) => {
 
         // Tentar conectar à API externa com retentativas
         console.log(`[Auth] Iniciando autenticação para ${email}`);
-        const sdk = await connectWithRetries(email, password);
+        
+        let sdk;
+        try {
+            // Primeiro tenta o método normal
+            sdk = await connectWithRetries(email, password);
+        } catch (error) {
+            console.error(`[Auth] Método normal falhou, tentando alternativas: ${error.message}`);
+            
+            // Se falhar, tenta métodos alternativos
+            sdk = await tryAlternativeLogin(email, password);
+        }
 
+        // Se chegou aqui, a autenticação foi bem-sucedida
+        console.log(`[Auth] Autenticação bem-sucedida, buscando saldo para ${email}`);
+        
         const balances = await sdk.balances();
         const realBalances = balances.getBalances().filter(balance => balance.type == 'real');
 
@@ -148,7 +232,7 @@ router.post('/', async (req, res) => {
         return res.status(401).json({
             status: 'ERROR',
             code: 401,
-            message: 'Autenticação inválida.',
+            message: 'Autenticação inválida ou serviço temporariamente indisponível.',
             error: error.message
         });
     }
@@ -196,6 +280,33 @@ router.get('/check', (req, res) => {
         cacheSize: authCache.size,
         uptime: process.uptime()
     });
+});
+
+// Rota para teste de conexão com a API da Polarium
+router.get('/test-connection', async (req, res) => {
+    try {
+        console.log('[TestConnection] Testando conexão com API da Polarium...');
+        
+        // Tenta fazer uma requisição simples para a API
+        const response = await fetch(process.env.API_URL);
+        const status = response.status;
+        
+        console.log(`[TestConnection] Resposta da API: ${status}`);
+        
+        return res.status(200).json({
+            status: 'OK',
+            apiStatus: status,
+            message: `Conexão com API testada, resposta: ${status}`
+        });
+    } catch (error) {
+        console.error(`[TestConnection] Erro ao testar conexão: ${error.message}`);
+        
+        return res.status(500).json({
+            status: 'ERROR',
+            message: 'Falha ao testar conexão com API externa',
+            error: error.message
+        });
+    }
 });
 
 export default router

@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "API feita para requisições de usuários do Broker.",
   "main": "index.js",
-  "author": "Cássio Martim",
   "license": "MIT",
   "type": "module",
   "scripts": {
