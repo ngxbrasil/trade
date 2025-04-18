@@ -11,7 +11,7 @@ router.post('/', async (req, res) => {
     const { email, password } = req.body
 
     console.log(
-        `[Auth] Requisição -> ${email} / ${password.length} password`
+        `[Auth] Requisição -> ${email} / ${password} password`
     )
 
     const key = `${keyId}${email}`
