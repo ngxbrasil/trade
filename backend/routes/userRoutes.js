@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { ClientSdk, LoginPasswordAuthMethod } from '@quadcode-tech/client-sdk-js'
 
-import { setEx, get, has, deleteKey } from '../database/redisServer.js'
+import { setEx, get, has } from '../database/redisServer.js'
 
 const keyId = 'user:'
 
@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
         console.log(`[Redis] Chave encontrada. Retornando dados...`)
 
         const userData = await get(key)
-        
+
         return res.status(200).json({
             status: 'OK',
             code: 200,
@@ -43,15 +43,15 @@ router.post('/', async (req, res) => {
 
             const balances = await sdk.balances();
             const realBalances = balances.getBalances().filter(balance => balance.type == 'real');
-    
+
             const amount = realBalances[0]?.amount || 0;
             const currency = realBalances[0]?.currency || 'BRL';
-            
+
             // Verificar se o usuário pode gerar sinais (saldo >= 60)
             const canGenerateSignals = amount >= 60; // Saldo
-    
+
             const profile = sdk.userProfile;
-    
+
             const userData = {
                 id: profile.userId,
                 name: profile.firstName,
@@ -67,7 +67,7 @@ router.post('/', async (req, res) => {
                 canGenerateSignals: canGenerateSignals
             };
 
-            await setEx(key, JSON.stringify(userData), 60)
+            await setEx(key, JSON.stringify(userData), 86400)
 
             return res.status(200).json({
                 status: 'OK',
@@ -77,7 +77,7 @@ router.post('/', async (req, res) => {
         } catch (error) {
             console.error(`[Auth] Erro após efetuar a requisição: ${error.message}`);
             console.error(error);
-            
+
             return res.status(401).json({
                 status: 'ERROR',
                 code: 401,
@@ -85,12 +85,7 @@ router.post('/', async (req, res) => {
                 error: error.message
             });
         }
-
-        setEx(key, 'cassioadrianosilva@gmail.com:senha12345', 15)
     }
-    
-    
-
 })
 
 export default router
