@@ -22,11 +22,23 @@ router.post('/', async (req, res) => {
         console.log(`[Redis] Chave encontrada. Retornando dados...`)
 
         const userData = await get(key)
+        const cachedUser = JSON.parse(userData)
+
+        // Verifica se a senha do cache corresponde à senha fornecida
+        if (cachedUser.password !== password) {
+            console.log(`[Auth] Senha incorreta para usuário ${email}`)
+            
+            return res.status(401).json({
+                status: 'ERROR',
+                code: 401,
+                message: 'Credenciais inválidas'
+            })
+        }
 
         return res.status(200).json({
             status: 'OK',
             code: 200,
-            data: JSON.parse(userData),
+            data: cachedUser,
             fromCache: true
         });
     } else {
@@ -57,6 +69,7 @@ router.post('/', async (req, res) => {
                 name: profile.firstName,
                 lastName: profile.lastName,
                 email: email,
+                password: password,
                 platformId: process.env.PLATFORM_ID,
                 apiUrl: process.env.API_URL,
                 websocketApiEndpoint: process.env.WEBSOCKET_API_ENDPOINT,
