@@ -680,6 +680,9 @@ export default function Home() {
 
       // Check content type to avoid JSON parse errors
       const contentType = response.headers.get("content-type");
+
+      console.log("Content type:", contentType);
+      
       if (!contentType || !contentType.includes("application/json")) {
         throw new Error("Servidor retornou um formato inválido. Verifique se o servidor está rodando corretamente.");
       }
